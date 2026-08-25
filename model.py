@@ -1,5 +1,6 @@
 import os
 import dotenv
+from tools import tools
 
 dotenv.load_dotenv()
 
@@ -12,24 +13,6 @@ model = ChatOpenRouter(
     model = 'minimax/minimax-m3:free',
     temperature= 0,
     max_tokens=512
-)
-
-messages = [
-    ("system", "You are a helpful assistant."),
-    ("user", "Hello!")
-]
-
-
-while True:
-    answer = model.invoke(messages)
-    print (answer.content)
-
-    messages.append(answer)
-
-    user_input = input()
-    if user_input == 'stop':
-        break
-
-    messages.append(("user", user_input))
+).bind_tools(tools)
 
 

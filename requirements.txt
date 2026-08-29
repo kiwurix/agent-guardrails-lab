@@ -1,0 +1,5 @@
+langchain-core
+langchain-openrouter
+langgraph
+python-dotenv
+typing-extensions

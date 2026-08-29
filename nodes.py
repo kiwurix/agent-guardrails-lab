@@ -5,7 +5,7 @@ from state import MessagesState
 from typing import cast
 
 
-def llm_call(state: MessagesState):
+def llm_call(state: MessagesState) -> dict:
     return {
         "messages": [
             model.invoke(
@@ -21,7 +21,7 @@ def llm_call(state: MessagesState):
     }
 
 
-def tool_node(state: MessagesState):
+def tool_node(state: MessagesState) -> dict:
     result = []
     for tool_call in cast(AIMessage, state["messages"][-1]).tool_calls:
         tool = tools_by_name[tool_call["name"]]

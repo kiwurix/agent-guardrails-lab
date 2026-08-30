@@ -2,13 +2,15 @@ from sqlalchemy import create_engine, Text, ForeignKey
 from sqlalchemy.orm import sessionmaker, DeclarativeBase, Mapped, mapped_column, relationship
 from datetime import datetime
 
-engine = create_engine("sqlite:///./app.db")
+engine = create_engine("sqlite:///data/app.db")
 
-session = sessionmaker(engine)
-
+Session = sessionmaker(engine)
+session = Session()
 
 class Base(DeclarativeBase):
-    pass
+    def to_dict(self, prohibited_columns: list[str]):
+        return {column.name: getattr(self, column.name) for column in self.__table__.columns if
+                column.name not in prohibited_columns}
 
 class Customer(Base):
     __tablename__ = 'customers'
@@ -65,14 +67,5 @@ class Order(Base):
     customer = relationship('Customer', back_populates='orders')
     tickets = relationship('Ticket', back_populates='order')
 
-Base().metadata.create_all(engine)
-
-
-
-
-
-
-
-
-
+Base.metadata.create_all(engine)
 

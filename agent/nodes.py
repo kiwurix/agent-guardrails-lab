@@ -4,14 +4,21 @@ from .state import MessagesState
 from .tools import tools_by_name
 from langchain_core.messages import SystemMessage, ToolMessage, AIMessage
 
+prompt = (
+    "You are a customer support assistant. "
+    "Help customers resolve their support tickets using the provided information and tools. "
+    "Do not mention internal tools or implementation details - "
+    "present relevant results in clear, user-friendly language. "
+    "Do NOT invent your abilities or any other information."
+)
+
+
 def llm_call(state: MessagesState) -> dict:
     return {
         "messages": [
             model.invoke(
                 [
-                    SystemMessage(
-                        content="You are a helpful assistant tasked with performing arithmetic on a set of inputs."
-                    )
+                    SystemMessage(content=prompt)
                 ]
                 + state["messages"]
             )

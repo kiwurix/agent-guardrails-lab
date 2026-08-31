@@ -12,7 +12,9 @@ session = Session()
 
 
 class Base(DeclarativeBase):
-    def to_dict(self, prohibited_columns: list[str]):
+    def to_dict(self, prohibited_columns: list[str] | None = None):
+        prohibited_columns = [] if not prohibited_columns else prohibited_columns
+
         return {column.name: getattr(self, column.name) for column in self.__table__.columns if
                 column.name not in prohibited_columns}
 

@@ -1,6 +1,6 @@
 from datetime import datetime
-from data.database import Base, Customer, Order, Ticket, TicketMessage, engine, session
-from data.enums import *
+from .database import Base, Customer, Order, Ticket, TicketMessage, engine, session
+from .enums import AccountRole, Currency, OrderStatus, PaymentStatus, SenderType, TicketStatus
 
 
 def generate_data() -> None:

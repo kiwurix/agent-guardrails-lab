@@ -1,6 +1,6 @@
+import operator
 from langchain_core.messages import AnyMessage
 from typing_extensions import TypedDict, Annotated
-import operator
 
 
 class MessagesState(TypedDict):

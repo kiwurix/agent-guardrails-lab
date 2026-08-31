@@ -1,6 +1,6 @@
-from langchain_core.tools import tool
-from data.database import session, Customer, Ticket, Order
 from sqlalchemy import select
+from langchain_core.tools import tool
+from data.database import Customer, Order, Ticket, session
 
 
 # Define tools

@@ -1,4 +1,4 @@
-from graph import agent
+from agent.graph import agent
 from langchain_core.messages import HumanMessage
 
 

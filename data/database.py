@@ -1,8 +1,9 @@
-from sqlalchemy import create_engine, Text, ForeignKey
-from sqlalchemy.orm import sessionmaker, DeclarativeBase, Mapped, mapped_column, relationship
-from datetime import datetime, timedelta
-from data.enums import *
 import random
+from datetime import datetime, timedelta
+from sqlalchemy import create_engine, Text, ForeignKey
+from .enums import AccountRole, Currency, OrderStatus, TicketStatus
+from sqlalchemy.orm import sessionmaker, DeclarativeBase, Mapped, mapped_column, relationship
+
 
 engine = create_engine("sqlite:///data/app.db")
 

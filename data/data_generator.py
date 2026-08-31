@@ -1,13 +1,12 @@
 from datetime import datetime
-from database import Customer, Order, Ticket, TicketMessage, session
+from data.database import Base, Customer, Order, Ticket, TicketMessage, engine, session
 from data.enums import *
 
 
 def generate_data() -> None:
-    session.query(TicketMessage).delete()
-    session.query(Ticket).delete()
-    session.query(Order).delete()
-    session.query(Customer).delete()
+    session.close()
+    Base.metadata.drop_all(engine)
+    Base.metadata.create_all(engine)
 
     anna = Customer(
         first_name="Anna",

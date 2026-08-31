@@ -1,18 +1,20 @@
 from sqlalchemy import create_engine, Text, ForeignKey
 from sqlalchemy.orm import sessionmaker, DeclarativeBase, Mapped, mapped_column, relationship
-from datetime import datetime
+from datetime import datetime, timedelta
 from data.enums import *
-
+import random
 
 engine = create_engine("sqlite:///data/app.db")
 
 Session = sessionmaker(engine)
 session = Session()
 
+
 class Base(DeclarativeBase):
     def to_dict(self, prohibited_columns: list[str]):
         return {column.name: getattr(self, column.name) for column in self.__table__.columns if
                 column.name not in prohibited_columns}
+
 
 class Customer(Base):
     __tablename__ = 'customers'
@@ -20,9 +22,9 @@ class Customer(Base):
     first_name: Mapped[str] = mapped_column(Text, nullable=False)
     last_name: Mapped[str] = mapped_column(Text, nullable=False)
     email: Mapped[str] = mapped_column(Text, nullable=False, unique=True)
-    phone: Mapped[str|None] = mapped_column(Text, unique=True)
-    shipping_address: Mapped[str|None] = mapped_column(Text)
-    account_role:Mapped[str] = mapped_column(Text, nullable=False, default=AccountRole.USER.value)
+    phone: Mapped[str | None] = mapped_column(Text, unique=True)
+    shipping_address: Mapped[str | None] = mapped_column(Text)
+    account_role: Mapped[str] = mapped_column(Text, nullable=False, default=AccountRole.USER.value)
 
     tickets = relationship('Ticket', back_populates='customer')
     orders = relationship('Order', back_populates='customer')
@@ -32,7 +34,7 @@ class Ticket(Base):
     __tablename__ = 'tickets'
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     customer_id: Mapped[int] = mapped_column(ForeignKey('customers.id'), nullable=False)
-    order_id: Mapped[int|None] = mapped_column(ForeignKey('orders.id'))
+    order_id: Mapped[int | None] = mapped_column(ForeignKey('orders.id'))
     status: Mapped[str] = mapped_column(Text, nullable=False, default=TicketStatus.OPEN.value)
     subject: Mapped[str] = mapped_column(Text, nullable=False)
     created_at: Mapped[datetime] = mapped_column(nullable=False, default=datetime.now)
@@ -65,9 +67,12 @@ class Order(Base):
     payment_status: Mapped[str] = mapped_column(Text, nullable=False)
     shipping_address: Mapped[str] = mapped_column(Text, nullable=False)
     created_at: Mapped[datetime] = mapped_column(nullable=False, default=datetime.now)
+    estimated_delivery_date: Mapped[datetime] = (
+        mapped_column(nullable=False,
+                      default=lambda: datetime.now() + timedelta(days=random.randint(2, 5))))
 
     customer = relationship('Customer', back_populates='orders')
     tickets = relationship('Ticket', back_populates='order')
 
-Base.metadata.create_all(engine)
 
+Base.metadata.create_all(engine)

@@ -1,6 +1,6 @@
 from datetime import datetime
 from database import Customer, Order, Ticket, TicketMessage, session
-from enums import *
+from data.enums import *
 
 
 def generate_data() -> None:

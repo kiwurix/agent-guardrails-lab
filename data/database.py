@@ -1,7 +1,8 @@
 from sqlalchemy import create_engine, Text, ForeignKey
 from sqlalchemy.orm import sessionmaker, DeclarativeBase, Mapped, mapped_column, relationship
 from datetime import datetime
-from enums import *
+from data.enums import *
+
 
 engine = create_engine("sqlite:///data/app.db")
 

@@ -1,6 +1,7 @@
 from sqlalchemy import create_engine, Text, ForeignKey
 from sqlalchemy.orm import sessionmaker, DeclarativeBase, Mapped, mapped_column, relationship
 from datetime import datetime
+from enums import *
 
 engine = create_engine("sqlite:///data/app.db")
 
@@ -20,7 +21,7 @@ class Customer(Base):
     email: Mapped[str] = mapped_column(Text, nullable=False, unique=True)
     phone: Mapped[str|None] = mapped_column(Text, unique=True)
     shipping_address: Mapped[str|None] = mapped_column(Text)
-    account_role:Mapped[str] = mapped_column(Text, nullable=False, default='user')
+    account_role:Mapped[str] = mapped_column(Text, nullable=False, default=AccountRole.USER.value)
 
     tickets = relationship('Ticket', back_populates='customer')
     orders = relationship('Order', back_populates='customer')
@@ -31,7 +32,7 @@ class Ticket(Base):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     customer_id: Mapped[int] = mapped_column(ForeignKey('customers.id'), nullable=False)
     order_id: Mapped[int|None] = mapped_column(ForeignKey('orders.id'))
-    status: Mapped[str] = mapped_column(Text, nullable=False, default='open')
+    status: Mapped[str] = mapped_column(Text, nullable=False, default=TicketStatus.OPEN.value)
     subject: Mapped[str] = mapped_column(Text, nullable=False)
     created_at: Mapped[datetime] = mapped_column(nullable=False, default=datetime.now)
     updated_at: Mapped[datetime] = mapped_column(nullable=False, default=datetime.now)
@@ -58,8 +59,8 @@ class Order(Base):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     customer_id: Mapped[int] = mapped_column(ForeignKey('customers.id'), nullable=False)
     total_amount_cents: Mapped[int] = mapped_column(nullable=False)
-    currency: Mapped[str] = mapped_column(Text, nullable=False, default='EUR')
-    status: Mapped[str] = mapped_column(Text, nullable=False, default='created')
+    currency: Mapped[str] = mapped_column(Text, nullable=False, default=Currency.EUR.value)
+    status: Mapped[str] = mapped_column(Text, nullable=False, default=OrderStatus.CREATED.value)
     payment_status: Mapped[str] = mapped_column(Text, nullable=False)
     shipping_address: Mapped[str] = mapped_column(Text, nullable=False)
     created_at: Mapped[datetime] = mapped_column(nullable=False, default=datetime.now)

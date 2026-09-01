@@ -76,6 +76,29 @@ class Order(Base):
 
     customer = relationship('Customer', back_populates='orders')
     tickets = relationship('Ticket', back_populates='order')
+    order_items = relationship('OrderItem', back_populates='order')
+
+
+class Item(Base):
+    __tablename__ = "items"
+    id: Mapped[int] = mapped_column(primary_key= True, autoincrement=True)
+    name: Mapped[str] = mapped_column(Text, nullable=False)
+    code:Mapped[str] = mapped_column(Text, nullable=False, unique=True)
+    price_cents: Mapped[int] = mapped_column(nullable=False, default=1)
+
+    order_items = relationship('OrderItem', back_populates='item')
+
+class OrderItem(Base):
+    __tablename__ = "order_items"
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    order_id: Mapped[int] = mapped_column(ForeignKey('orders.id'), nullable=False)
+    item_id: Mapped[int] = mapped_column(ForeignKey('items.id'), nullable=False)
+    quantity: Mapped[int] = mapped_column(nullable=False, default=1)
+
+    item = relationship('Item', back_populates='order_items')
+    order = relationship('Order', back_populates='order_items')
+
+
 
 
 Base.metadata.create_all(engine)

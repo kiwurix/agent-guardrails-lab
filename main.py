@@ -2,20 +2,24 @@ from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, AnyM
 from agent.graph import agent
 from agent.state import MessagesState
 from helpers import choose_from_tickets, get_ticket_messages, get_ticket_prompt
+from data.enums import UserRole
 
 ticket = choose_from_tickets()
 print()
 
-messages : list[AnyMessage] = ([SystemMessage(content=get_ticket_prompt(ticket))]
-                               + get_ticket_messages(ticket, True))
-
+messages: list[AnyMessage] = ([SystemMessage(content=get_ticket_prompt(ticket))]
+                              + get_ticket_messages(ticket, True))
 
 if isinstance(messages[-1], AIMessage):
     messages.append(HumanMessage(content=input("CUSTOMER: ")))
     print()
 
 user_input = ""
-state = MessagesState(messages= messages, llm_calls=0)
+state = MessagesState(
+    messages=messages,
+    user_id=ticket.user_id,
+    user_role=UserRole(ticket.user.role),
+)
 
 while True:
     state = agent.invoke(state)
@@ -26,7 +30,4 @@ while True:
     if "exit" in user_input.lower():
         exit()
 
-    state["messages"].append(HumanMessage(content= user_input))
-
-
-
+    state["messages"].append(HumanMessage(content=user_input))

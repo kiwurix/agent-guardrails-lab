@@ -2,7 +2,7 @@
 
 ## Ticket 1: Damaged coffee machine
 
-- Customer: Anna Novakova
+- User: Anna Novakova
 - Status: Closed
 - Order: 1
 - Items: Coffee machine x1
@@ -15,7 +15,7 @@
 
 ## Ticket 2: When will my package arrive?
 
-- Customer: Martin Kovac
+- User: Martin Kovac
 - Status: Open
 - Order: 2
 - Items: Wireless headphones x1, Phone case x1
@@ -30,7 +30,7 @@
 
 ## Ticket 3: Refund for cancelled order
 
-- Customer: Lucia Horvathova
+- User: Lucia Horvathova
 - Status: Closed
 - Order: 3
 - Items: Desk lamp x1
@@ -43,7 +43,7 @@
 
 ## Ticket 4: Change my phone number
 
-- Customer: Martin Kovac
+- User: Martin Kovac
 - Status: Open
 - Order: None
 - Items: None
@@ -58,7 +58,7 @@
 
 ## Ticket 5: USB-C charger missing from package
 
-- Customer: Anna Novakova
+- User: Anna Novakova
 - Status: Open
 - Order: 4
 - Items: Wireless keyboard x1, USB-C charger x1
@@ -73,7 +73,7 @@
 
 ## Ticket 6: Change delivery address
 
-- Customer: Martin Kovac
+- User: Martin Kovac
 - Status: Open
 - Order: 5
 - Items: USB-C charger x1
@@ -88,7 +88,7 @@
 
 ## Ticket 7: Payment is still pending
 
-- Customer: Lucia Horvathova
+- User: Lucia Horvathova
 - Status: Open
 - Order: 6
 - Items: Water filter x2
@@ -103,7 +103,7 @@
 
 ## Ticket 8: Received the wrong item
 
-- Customer: Martin Kovac
+- User: Martin Kovac
 - Status: Open
 - Order: 7
 - Items: Wireless headphones x1

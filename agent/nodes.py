@@ -24,8 +24,7 @@ def llm_call(state: MessagesState) -> dict:
                 ]
                 + state["messages"]
             )
-        ],
-        "llm_calls": state.get('llm_calls', 0) + 1
+        ]
     }
 
 

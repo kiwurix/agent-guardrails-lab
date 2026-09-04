@@ -1,16 +1,16 @@
 from sqlalchemy import select
 from langchain_core.tools import tool
-from data.database import Customer, Item, Order, OrderItem, Ticket, session
+from data.database import User, Item, Order, OrderItem, Ticket, session
 
 
 # Define tools
 @tool
-def get_customer_info(customer_id: int):
-    """Returns customer information by customer id."""
+def get_user_info(user_id: int):
+    """Returns user information by user id."""
 
-    query = select(Customer).where(Customer.id == customer_id)
-    customer = session.scalars(query).first()
-    return customer.to_dict() if customer else None
+    query = select(User).where(User.id == user_id)
+    user = session.scalars(query).first()
+    return user.to_dict() if user else None
 
 
 @tool
@@ -49,6 +49,5 @@ def get_item_info(item_id: int):
     return item.to_dict() if item else None
 
 
-tools = [get_customer_info, get_ticket_info, get_order_info, get_order_items, get_item_info]
+tools = [get_user_info, get_ticket_info, get_order_info, get_order_items, get_item_info]
 tools_by_name = {tool.name: tool for tool in tools}
-

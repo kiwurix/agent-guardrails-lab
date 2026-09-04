@@ -1,7 +1,7 @@
 from enum import Enum
 
-class AccountRole(Enum):
-    USER = "user"
+class UserRole(Enum):
+    CUSTOMER = "customer"
     ADMIN = "admin"
 
 class TicketStatus(Enum):

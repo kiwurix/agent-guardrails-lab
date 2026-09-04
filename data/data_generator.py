@@ -1,9 +1,11 @@
 from datetime import datetime
 
+from sqlalchemy import text
+
 from .database import (
-    Base, Customer, Item, Order, OrderItem, Ticket, TicketMessage, engine, session,
+    Base, User, Item, Order, OrderItem, Ticket, TicketMessage, engine, session,
 )
-from .enums import AccountRole, Currency, OrderStatus, PaymentStatus, SenderType, TicketStatus
+from .enums import UserRole, Currency, OrderStatus, PaymentStatus, SenderType, TicketStatus
 
 
 def generate_data() -> None:
@@ -11,28 +13,28 @@ def generate_data() -> None:
     Base.metadata.drop_all(engine)
     Base.metadata.create_all(engine)
 
-    anna = Customer(
+    anna = User(
         first_name="Anna", last_name="Novakova",
         email="anna.novakova@example.com", phone="+421 900 000 101",
         shipping_address="Dunajska 12, 811 08 Bratislava, Slovakia",
-        account_role=AccountRole.USER.value,
+        role=UserRole.CUSTOMER.value,
     )
-    martin = Customer(
+    martin = User(
         first_name="Martin", last_name="Kovac",
         email="martin.kovac@example.com", phone="+421 900 000 102",
         shipping_address="Hlavna 45, 040 01 Kosice, Slovakia",
-        account_role=AccountRole.USER.value,
+        role=UserRole.CUSTOMER.value,
     )
-    lucia = Customer(
+    lucia = User(
         first_name="Lucia", last_name="Horvathova",
         email="lucia.horvathova@example.com", phone=None,
         shipping_address="Namestie SNP 7, 974 01 Banska Bystrica, Slovakia",
-        account_role=AccountRole.USER.value,
+        role=UserRole.CUSTOMER.value,
     )
-    peter = Customer(
+    peter = User(
         first_name="Peter", last_name="Admin",
         email="peter.admin@example.com", phone="+421 900 000 104",
-        shipping_address=None, account_role=AccountRole.ADMIN.value,
+        shipping_address=None, role=UserRole.ADMIN.value,
     )
     session.add_all([anna, martin, lucia, peter])
     session.flush()
@@ -51,43 +53,43 @@ def generate_data() -> None:
     session.flush()
 
     damaged_order = Order(
-        customer_id=anna.id, total_amount_cents=8990, currency=Currency.EUR.value,
+        user_id=anna.id, total_amount_cents=8990, currency=Currency.EUR.value,
         status=OrderStatus.DELIVERED.value, payment_status=PaymentStatus.PAID.value,
         shipping_address=anna.shipping_address, created_at=datetime(2026, 2, 3, 10, 15),
         estimated_delivery_date=datetime(2026, 2, 7, 18, 0),
     )
     delivery_order = Order(
-        customer_id=martin.id, total_amount_cents=6598, currency=Currency.EUR.value,
+        user_id=martin.id, total_amount_cents=6598, currency=Currency.EUR.value,
         status=OrderStatus.SHIPPED.value, payment_status=PaymentStatus.PAID.value,
         shipping_address=martin.shipping_address, created_at=datetime(2026, 2, 10, 14, 30),
         estimated_delivery_date=datetime(2026, 2, 18, 18, 0),
     )
     refund_order = Order(
-        customer_id=lucia.id, total_amount_cents=3490, currency=Currency.EUR.value,
+        user_id=lucia.id, total_amount_cents=3490, currency=Currency.EUR.value,
         status=OrderStatus.CANCELLED.value, payment_status=PaymentStatus.REFUNDED.value,
         shipping_address=lucia.shipping_address, created_at=datetime(2026, 2, 12, 9, 5),
         estimated_delivery_date=datetime(2026, 2, 17, 18, 0),
     )
     missing_item_order = Order(
-        customer_id=anna.id, total_amount_cents=9480, currency=Currency.EUR.value,
+        user_id=anna.id, total_amount_cents=9480, currency=Currency.EUR.value,
         status=OrderStatus.DELIVERED.value, payment_status=PaymentStatus.PAID.value,
         shipping_address=anna.shipping_address, created_at=datetime(2026, 2, 15, 12, 10),
         estimated_delivery_date=datetime(2026, 2, 20, 18, 0),
     )
     address_change_order = Order(
-        customer_id=martin.id, total_amount_cents=2490, currency=Currency.EUR.value,
+        user_id=martin.id, total_amount_cents=2490, currency=Currency.EUR.value,
         status=OrderStatus.PREPARED.value, payment_status=PaymentStatus.PAID.value,
         shipping_address=martin.shipping_address, created_at=datetime(2026, 2, 17, 8, 20),
         estimated_delivery_date=datetime(2026, 2, 22, 18, 0),
     )
     pending_payment_order = Order(
-        customer_id=lucia.id, total_amount_cents=2598, currency=Currency.EUR.value,
+        user_id=lucia.id, total_amount_cents=2598, currency=Currency.EUR.value,
         status=OrderStatus.CREATED.value, payment_status=PaymentStatus.PENDING.value,
         shipping_address=lucia.shipping_address, created_at=datetime(2026, 2, 18, 16, 40),
         estimated_delivery_date=datetime(2026, 2, 24, 18, 0),
     )
     wrong_item_order = Order(
-        customer_id=martin.id, total_amount_cents=4599, currency=Currency.EUR.value,
+        user_id=martin.id, total_amount_cents=4599, currency=Currency.EUR.value,
         status=OrderStatus.DELIVERED.value, payment_status=PaymentStatus.PAID.value,
         shipping_address=martin.shipping_address, created_at=datetime(2026, 2, 1, 11, 0),
         estimated_delivery_date=datetime(2026, 2, 6, 18, 0),
@@ -111,42 +113,42 @@ def generate_data() -> None:
     ])
 
     damaged_ticket = Ticket(
-        customer_id=anna.id, order_id=damaged_order.id, status=TicketStatus.CLOSED.value,
+        user_id=anna.id, order_id=damaged_order.id, status=TicketStatus.CLOSED.value,
         subject="Damaged coffee machine", created_at=datetime(2026, 2, 8, 11, 20),
         updated_at=datetime(2026, 2, 9, 16, 10),
     )
     delivery_ticket = Ticket(
-        customer_id=martin.id, order_id=delivery_order.id, status=TicketStatus.OPEN.value,
+        user_id=martin.id, order_id=delivery_order.id, status=TicketStatus.OPEN.value,
         subject="When will my package arrive?", created_at=datetime(2026, 2, 14, 8, 45),
         updated_at=datetime(2026, 2, 14, 9, 15),
     )
     refund_ticket = Ticket(
-        customer_id=lucia.id, order_id=refund_order.id, status=TicketStatus.CLOSED.value,
+        user_id=lucia.id, order_id=refund_order.id, status=TicketStatus.CLOSED.value,
         subject="Refund for cancelled order", created_at=datetime(2026, 2, 13, 13, 0),
         updated_at=datetime(2026, 2, 15, 10, 30),
     )
     account_ticket = Ticket(
-        customer_id=martin.id, order_id=None, status=TicketStatus.OPEN.value,
+        user_id=martin.id, order_id=None, status=TicketStatus.OPEN.value,
         subject="Change my phone number", created_at=datetime(2026, 2, 16, 17, 25),
         updated_at=datetime(2026, 2, 16, 17, 40),
     )
     missing_item_ticket = Ticket(
-        customer_id=anna.id, order_id=missing_item_order.id, status=TicketStatus.OPEN.value,
+        user_id=anna.id, order_id=missing_item_order.id, status=TicketStatus.OPEN.value,
         subject="USB-C charger missing from package", created_at=datetime(2026, 2, 20, 19, 10),
         updated_at=datetime(2026, 2, 20, 19, 35),
     )
     address_change_ticket = Ticket(
-        customer_id=martin.id, order_id=address_change_order.id, status=TicketStatus.OPEN.value,
+        user_id=martin.id, order_id=address_change_order.id, status=TicketStatus.OPEN.value,
         subject="Change delivery address", created_at=datetime(2026, 2, 17, 9, 5),
         updated_at=datetime(2026, 2, 17, 9, 20),
     )
     payment_ticket = Ticket(
-        customer_id=lucia.id, order_id=pending_payment_order.id, status=TicketStatus.OPEN.value,
+        user_id=lucia.id, order_id=pending_payment_order.id, status=TicketStatus.OPEN.value,
         subject="Payment is still pending", created_at=datetime(2026, 2, 18, 17, 10),
         updated_at=datetime(2026, 2, 18, 17, 25),
     )
     wrong_item_ticket = Ticket(
-        customer_id=martin.id, order_id=wrong_item_order.id, status=TicketStatus.OPEN.value,
+        user_id=martin.id, order_id=wrong_item_order.id, status=TicketStatus.OPEN.value,
         subject="Received the wrong item", created_at=datetime(2026, 2, 7, 10, 0),
         updated_at=datetime(2026, 2, 7, 10, 25),
     )
@@ -228,7 +230,7 @@ def generate_data() -> None:
     session.commit()
 
     print(
-        "Demo data created: 4 customers, 7 items, 7 orders, "
+        "Demo data created: 4 users, 7 items, 7 orders, "
         "9 order items, 8 tickets, 22 messages."
     )
 

@@ -1,7 +1,7 @@
 import random
 from datetime import datetime, timedelta
 from sqlalchemy import create_engine, Text, ForeignKey
-from .enums import AccountRole, Currency, OrderStatus, TicketStatus
+from .enums import UserRole, Currency, OrderStatus, TicketStatus
 from sqlalchemy.orm import sessionmaker, DeclarativeBase, Mapped, mapped_column, relationship
 
 
@@ -19,31 +19,31 @@ class Base(DeclarativeBase):
                 column.name not in prohibited_columns}
 
 
-class Customer(Base):
-    __tablename__ = 'customers'
+class User(Base):
+    __tablename__ = 'users'
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     first_name: Mapped[str] = mapped_column(Text, nullable=False)
     last_name: Mapped[str] = mapped_column(Text, nullable=False)
     email: Mapped[str] = mapped_column(Text, nullable=False, unique=True)
     phone: Mapped[str | None] = mapped_column(Text, unique=True)
     shipping_address: Mapped[str | None] = mapped_column(Text)
-    account_role: Mapped[str] = mapped_column(Text, nullable=False, default=AccountRole.USER.value)
+    role: Mapped[str] = mapped_column(Text, nullable=False, default=UserRole.CUSTOMER.value)
 
-    tickets = relationship('Ticket', back_populates='customer')
-    orders = relationship('Order', back_populates='customer')
+    tickets = relationship('Ticket', back_populates='user')
+    orders = relationship('Order', back_populates='user')
 
 
 class Ticket(Base):
     __tablename__ = 'tickets'
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    customer_id: Mapped[int] = mapped_column(ForeignKey('customers.id'), nullable=False)
+    user_id: Mapped[int] = mapped_column(ForeignKey('users.id'), nullable=False)
     order_id: Mapped[int | None] = mapped_column(ForeignKey('orders.id'))
     status: Mapped[str] = mapped_column(Text, nullable=False, default=TicketStatus.OPEN.value)
     subject: Mapped[str] = mapped_column(Text, nullable=False)
     created_at: Mapped[datetime] = mapped_column(nullable=False, default=datetime.now)
     updated_at: Mapped[datetime] = mapped_column(nullable=False, default=datetime.now)
 
-    customer = relationship('Customer', back_populates='tickets')
+    user = relationship('User', back_populates='tickets')
     order = relationship('Order', back_populates='tickets')
     messages = relationship("TicketMessage", back_populates="ticket")
 
@@ -63,7 +63,7 @@ class TicketMessage(Base):
 class Order(Base):
     __tablename__ = 'orders'
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    customer_id: Mapped[int] = mapped_column(ForeignKey('customers.id'), nullable=False)
+    user_id: Mapped[int] = mapped_column(ForeignKey('users.id'), nullable=False)
     total_amount_cents: Mapped[int] = mapped_column(nullable=False)
     currency: Mapped[str] = mapped_column(Text, nullable=False, default=Currency.EUR.value)
     status: Mapped[str] = mapped_column(Text, nullable=False, default=OrderStatus.CREATED.value)
@@ -74,7 +74,7 @@ class Order(Base):
         mapped_column(nullable=False,
                       default=lambda: datetime.now() + timedelta(days=random.randint(2, 5))))
 
-    customer = relationship('Customer', back_populates='orders')
+    user = relationship('User', back_populates='orders')
     tickets = relationship('Ticket', back_populates='order')
     order_items = relationship('OrderItem', back_populates='order')
 

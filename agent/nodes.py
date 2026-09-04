@@ -3,6 +3,8 @@ from .model import model
 from .state import MessagesState
 from .tools import tools_by_name
 from langchain_core.messages import SystemMessage, ToolMessage, AIMessage
+import json
+
 
 prompt = (
     "You are a customer support assistant. "
@@ -32,7 +34,7 @@ def tool_node(state: MessagesState) -> dict:
     for tool_call in cast(AIMessage, state["messages"][-1]).tool_calls:
         tool = tools_by_name[tool_call["name"]]
         observation = tool.invoke(tool_call["args"])
-        result.append(ToolMessage(content=observation, tool_call_id=tool_call["id"]))
+        result.append(ToolMessage(content=json.dumps(observation, default=str), tool_call_id=tool_call["id"]))
 
     return {"messages": result}
 

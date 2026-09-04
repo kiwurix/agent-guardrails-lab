@@ -1,12 +1,12 @@
 from typing import Literal, cast
-from .state import MessagesState
+from .state import AgentState
 from .nodes import llm_call, tool_node
 from langchain_core.messages import AIMessage
 from langgraph.graph import StateGraph, START, END
 
 
 
-def should_continue(state: MessagesState) -> Literal["tool_node", "__end__"]:
+def should_continue(state: AgentState) -> Literal["tool_node", "__end__"]:
     """Decide if we should continue the loop or stop based upon whether the LLM made a tool call"""
 
     last_message = cast(AIMessage, state["messages"][-1])
@@ -17,7 +17,7 @@ def should_continue(state: MessagesState) -> Literal["tool_node", "__end__"]:
     return END
 
 
-agent_builder = StateGraph(MessagesState)
+agent_builder = StateGraph(AgentState)
 
 agent_builder.add_node("llm_call", llm_call)
 agent_builder.add_node("tool_node", tool_node)

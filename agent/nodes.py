@@ -1,6 +1,6 @@
 from typing import cast
 from .model import model
-from .state import MessagesState
+from .state import AgentState
 from .tools import tools_by_name
 from langchain_core.messages import SystemMessage, ToolMessage, AIMessage
 import json
@@ -15,7 +15,7 @@ prompt = (
 )
 
 
-def llm_call(state: MessagesState) -> dict:
+def llm_call(state: AgentState) -> dict:
     return {
         "messages": [
             model.invoke(
@@ -28,7 +28,7 @@ def llm_call(state: MessagesState) -> dict:
     }
 
 
-def tool_node(state: MessagesState) -> dict:
+def tool_node(state: AgentState) -> dict:
     result = []
     for tool_call in cast(AIMessage, state["messages"][-1]).tool_calls:
         tool = tools_by_name[tool_call["name"]]

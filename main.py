@@ -1,25 +1,8 @@
-from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, AnyMessage
+from langchain_core.messages import HumanMessage
 from agent.graph import agent
-from agent.state import MessagesState
-from helpers import choose_from_tickets, get_ticket_messages, get_ticket_prompt
-from data.enums import UserRole
+from session_initializers.console import ConsoleSessionBuilder
 
-ticket = choose_from_tickets()
-print()
-
-messages: list[AnyMessage] = ([SystemMessage(content=get_ticket_prompt(ticket))]
-                              + get_ticket_messages(ticket, True))
-
-if isinstance(messages[-1], AIMessage):
-    messages.append(HumanMessage(content=input("CUSTOMER: ")))
-    print()
-
-user_input = ""
-state = MessagesState(
-    messages=messages,
-    user_id=ticket.user_id,
-    user_role=UserRole(ticket.user.role),
-)
+state = ConsoleSessionBuilder().initialize()
 
 while True:
     state = agent.invoke(state)

@@ -19,7 +19,7 @@ state = MessagesState(messages= messages, llm_calls=0)
 
 while True:
     state = agent.invoke(state)
-    print(f"\nAGENT: {state["messages"][-1].content}\n")
+    print(f"\nAGENT: {state["messages"][-1].content.replace("*", "")}\n")
 
     user_input = input("CUSTOMER: ")
 

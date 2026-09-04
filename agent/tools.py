@@ -1,6 +1,6 @@
 from sqlalchemy import select
 from langchain_core.tools import tool
-from data.database import Customer, Order, Ticket, session
+from data.database import Customer, Item, Order, OrderItem, Ticket, session
 
 
 # Define tools
@@ -31,6 +31,24 @@ def get_order_info(order_id: int):
     return order.to_dict() if order else None
 
 
-tools = [get_customer_info, get_ticket_info, get_order_info]
+@tool
+def get_order_items(order_id: int):
+    """Returns order items by order id."""
+
+    query = select(OrderItem).where(OrderItem.order_id == order_id)
+    order_items = session.scalars(query).all()
+    return [order_item.to_dict() for order_item in order_items]
+
+
+@tool
+def get_item_info(item_id: int):
+    """Returns item information by item id."""
+
+    query = select(Item).where(Item.id == item_id)
+    item = session.scalars(query).first()
+    return item.to_dict() if item else None
+
+
+tools = [get_customer_info, get_ticket_info, get_order_info, get_order_items, get_item_info]
 tools_by_name = {tool.name: tool for tool in tools}
 

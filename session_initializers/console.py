@@ -34,14 +34,15 @@ class ConsoleSessionBuilder(BaseSessionBuilder):
 
 
     def _get_ticket(self):
-        print("Currently open tickets: \n")
-
         query = select(Ticket).where(Ticket.status == TicketStatus.OPEN.value)
         tickets = session.scalars(query).all()
 
+        print("Legend:\n\tRelated to selected user: R\n\tNot related to selected user: N\n")
+        print("Currently open tickets: \n")
+
         tickets_by_id = {}
         for n, ticket in enumerate(tickets, 1):
-            print(f"{n}: {ticket.subject}")
+            print(f"{n}: {ticket.subject} {"|R" if ticket.user_id == self.user_id else "|N"}")
             tickets_by_id[n] = ticket
 
         print()

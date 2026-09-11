@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from data.database import Ticket
+from data.database import Ticket, User
 from langchain_core.messages import AnyMessage, SystemMessage, AIMessage
 from agent.state import AgentState
 from authentication.identity import AuthenticatedUser
@@ -21,6 +21,14 @@ class BaseSessionBuilder(ABC):
 
     @abstractmethod
     def _get_ticket(self) -> None:
+        pass
+
+    @abstractmethod
+    def _create_user(self) -> User:
+        pass
+
+    @abstractmethod
+    def _create_ticket(self) -> Ticket:
         pass
 
     @abstractmethod

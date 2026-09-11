@@ -3,7 +3,7 @@ from data.database import User
 from typing import Callable, TypeVar
 from data.database import Ticket, session, TicketMessage
 from sqlalchemy import select
-from data.enums import TicketStatus, SenderType
+from data.enums import TicketStatus, SenderType, UserRole
 from typing import cast
 from langchain_core.messages import HumanMessage, AIMessage
 from authentication.identity import AuthenticatedUser
@@ -25,11 +25,31 @@ class ConsoleSessionBuilder(BaseSessionBuilder):
 
             index_to_user[n] = user
 
-        user_input = self._get_user_input("Choose user: ", int, (1, len(users)))
+        create_user_option = len(users) + 1
+        print(f"{create_user_option}: Create new user\n")
 
-        selected_user = index_to_user[user_input]
+        user_input = self._get_user_input("Choose user: ", int, (1, create_user_option))
+
+        if user_input == create_user_option:
+            selected_user = self._create_user()
+        else:
+            selected_user = index_to_user[user_input]
+
 
         self.authenticated_user = AuthenticatedUser(user_id=selected_user.id, user_role=selected_user.role)
+
+    def _create_user(self) -> User:
+        first_name = self._get_user_input("First name: ", str)
+        last_name = self._get_user_input("Last name: ", str)
+        email = self._get_user_input("Email: ", str)
+
+        user = User(first_name=first_name, last_name=last_name,
+                    email=email, role=UserRole.CUSTOMER.value)
+
+        session.add(user)
+        session.flush()
+
+        return user
 
     def _get_ticket(self):
         if self.authenticated_user is None:
@@ -47,11 +67,30 @@ class ConsoleSessionBuilder(BaseSessionBuilder):
             print(f"{n}: {ticket.subject}")
             tickets_by_id[n] = ticket
 
-        print()
+        create_ticket_option = n + 1
+        print(f"{create_ticket_option}: Create new ticket\n")
 
-        user_input = self._get_user_input("Choose ticket id: ", int, (1, n))
+        user_input = self._get_user_input("Choose ticket: ", int, (1, create_ticket_option))
 
-        self.ticket = tickets_by_id[user_input]
+        if user_input == create_ticket_option:
+            self.ticket = self._create_ticket()
+        else:
+            self.ticket = tickets_by_id[user_input]
+
+    def _create_ticket(self) -> Ticket:
+        if self.authenticated_user is None:
+            raise RuntimeError
+
+        subject = self._get_user_input("Ticket subject: ", str)
+
+        ticket = Ticket(
+            user_id=self.authenticated_user.user_id, status=TicketStatus.OPEN.value,
+            subject=subject)
+
+        session.add(ticket)
+        session.flush()
+
+        return ticket
 
     def _get_messages(self) -> None:
         if self.ticket is None:

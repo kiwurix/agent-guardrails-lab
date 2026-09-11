@@ -38,6 +38,10 @@ def tool_node(state: AgentState) -> dict:
     return {"messages": result}
 
 
+def pre_tool_guardrails_node(state: AgentState) -> dict:
+    return {}
+
+
 
 
 

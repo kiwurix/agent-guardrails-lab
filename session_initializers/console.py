@@ -6,13 +6,13 @@ from sqlalchemy import select
 from data.enums import TicketStatus, SenderType
 from typing import cast
 from langchain_core.messages import HumanMessage, AIMessage
-
+from authentication.identity import AuthenticatedUser
 
 T = TypeVar("T")
 
 
 class ConsoleSessionBuilder(BaseSessionBuilder):
-    def _get_user(self) -> None:
+    def _authenticate_user(self) -> None:
         query = select(User)
         users = session.scalars(query).all()
 
@@ -25,32 +25,33 @@ class ConsoleSessionBuilder(BaseSessionBuilder):
 
             index_to_user[n] = user
 
-        user_input = self._get_user_input("Choose user: ", int)
+        user_input = self._get_user_input("Choose user: ", int, (1, len(users)))
 
         selected_user = index_to_user[user_input]
 
-        self.user_id = selected_user.id
-        self.user_role = selected_user.role
-
+        self.authenticated_user = AuthenticatedUser(user_id=selected_user.id, user_role=selected_user.role)
 
     def _get_ticket(self):
+        if self.authenticated_user is None:
+            raise RuntimeError
+
         query = select(Ticket).where(Ticket.status == TicketStatus.OPEN.value)
         tickets = session.scalars(query).all()
 
-        print("Legend:\n\tRelated to selected user: R\n\tNot related to selected user: N\n")
-        print("Currently open tickets: \n")
-
         tickets_by_id = {}
-        for n, ticket in enumerate(tickets, 1):
-            print(f"{n}: {ticket.subject} {"|R" if ticket.user_id == self.user_id else "|N"}")
+        n = 0
+        for ticket in tickets:
+            if ticket.user_id != self.authenticated_user.user_id: continue
+            n += 1
+
+            print(f"{n}: {ticket.subject}")
             tickets_by_id[n] = ticket
 
         print()
 
-        user_input = self._get_user_input("Choose ticket id: ", int)
+        user_input = self._get_user_input("Choose ticket id: ", int, (1, n))
 
         self.ticket = tickets_by_id[user_input]
-
 
     def _get_messages(self) -> None:
         if self.ticket is None:
@@ -70,9 +71,8 @@ class ConsoleSessionBuilder(BaseSessionBuilder):
 
         self.messages = messages_to_llm
 
-
     @staticmethod
-    def _get_user_input(prompt: str, parser: Callable[[str], T]) -> T:
+    def _get_user_input(prompt: str, parser: Callable[[str], T], limit: None | tuple[int, int] = None) -> T:
         while True:
             try:
                 user_input = input(prompt).strip()
@@ -82,22 +82,16 @@ class ConsoleSessionBuilder(BaseSessionBuilder):
 
                 if not user_input: continue
 
+                value = parser(user_input)
+                if isinstance(value, int) and limit and (value < limit[0] or value > limit[1]):
+                    print("The number is out of range")
+                    continue
+
                 print()
-                return parser(user_input)
+                return value
 
             except ValueError:
                 pass
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+    def _append_human_message(self):
+        self.messages.append(HumanMessage(content=input("CUSTOMER: ")))

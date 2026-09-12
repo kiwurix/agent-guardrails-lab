@@ -1,7 +1,7 @@
 from typing import cast
 from .model import model
 from .state import AgentState
-from .tools import tools_by_name
+from .tools.registry import tools_by_name
 from langchain_core.messages import SystemMessage, ToolMessage, AIMessage
 import json
 

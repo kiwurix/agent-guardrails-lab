@@ -11,6 +11,7 @@ class GuardrailContext(BaseModel):
     ticket_id: int
     tool_name: str
     tool_args: dict[str, Any]
+    tool_metadata: dict[str, Any]
 
 
 class GuardrailDecision(BaseModel):

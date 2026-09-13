@@ -1,5 +1,5 @@
 from typing import Any
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, model_validator
 from authentication.identity import AuthenticatedUser
 from .enums import GuardrailAction
 
@@ -21,6 +21,12 @@ class GuardrailDecision(BaseModel):
     action: GuardrailAction
     reason: str|None = None
 
+    @model_validator(mode="after")
+    def validate_reason(self):
+        if self.action == GuardrailAction.BLOCK and self.reason is None:
+            raise ValueError("Reason is required when action is block")
+
+        return self
 
 class AggregatedGuardrailDecision(BaseModel):
     model_config = ConfigDict(frozen=True, strict=True)

@@ -4,6 +4,9 @@ from .state import AgentState
 from .tools.registry import tools_by_name
 from langchain_core.messages import SystemMessage, ToolMessage, AIMessage
 import json
+from guardrails.core.contracts import GuardrailContext
+from guardrails.core.enums import GuardrailStage
+from guardrails.runtime.manager import GuardrailManager
 
 
 prompt = (
@@ -39,9 +42,23 @@ def tool_node(state: AgentState) -> dict:
 
 
 def pre_tool_guardrails_node(state: AgentState) -> dict:
-    return {}
+    stage = GuardrailStage.PRE_TOOL
+    raise NotImplementedError()
+    manager = GuardrailManager()
+    authenticated_user = state["authenticated_user"]
+    ticket_id = state["ticket_id"]
 
+    for tool_call in cast(AIMessage, state["messages"][-1]).tool_calls:
+        tool = tools_by_name[tool_call["name"]]
 
+        context = GuardrailContext(
+            authenticated_user=authenticated_user,
+            ticket_id=ticket_id,
+            tool_name=tool.name,
+            tool_args=tool_call["args"],
+            tool_metadata=tool.metadata
+        )
 
+        manager.run_guardrails(stage, context)
 
 

@@ -1,12 +1,11 @@
+from dataclasses import dataclass
 from typing import Any
-from pydantic import BaseModel, ConfigDict, model_validator
 from authentication.identity import AuthenticatedUser
 from .enums import GuardrailAction
 
 
-class GuardrailContext(BaseModel):
-    model_config = ConfigDict(frozen=True, strict=True)
-
+@dataclass(frozen=True)
+class GuardrailContext:
     authenticated_user: AuthenticatedUser
     ticket_id: int
     tool_name: str
@@ -14,23 +13,18 @@ class GuardrailContext(BaseModel):
     tool_metadata: dict[str, Any]
 
 
-class GuardrailDecision(BaseModel):
-    model_config = ConfigDict(frozen=True, strict=True)
-
+@dataclass(frozen=True)
+class GuardrailDecision:
     guardrail_name: str
     action: GuardrailAction
-    reason: str|None = None
+    reason: str | None = None
 
-    @model_validator(mode="after")
-    def validate_reason(self):
+    def __post_init__(self):
         if self.action == GuardrailAction.BLOCK and self.reason is None:
             raise ValueError("Reason is required when action is block")
 
-        return self
 
-class AggregatedGuardrailDecision(BaseModel):
-    model_config = ConfigDict(frozen=True, strict=True)
-
+@dataclass(frozen=True)
+class AggregatedGuardrailDecision:
     action: GuardrailAction
     decisions: tuple[GuardrailDecision, ...]
-

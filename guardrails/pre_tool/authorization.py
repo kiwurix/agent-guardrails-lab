@@ -14,12 +14,11 @@ class AuthorizationGuardrail(BaseGuardrail):
 
 
     def evaluate(self, context: GuardrailContext) -> GuardrailDecision:
-        metadata = context.tool_metadata.get(AUTHORIZATION_POLICY_METADATA_KEY)
+        policy = context.tool_metadata.get(AUTHORIZATION_POLICY_METADATA_KEY)
 
-        if not metadata:
+        if not isinstance(policy, ToolAuthorizationPolicy):
             raise ValueError (f"Tool {context.tool_name} has not assigned authorization policy")
 
-        policy = ToolAuthorizationPolicy.model_validate(metadata)
         user_id = context.authenticated_user.user_id
 
         match policy.access_scope:

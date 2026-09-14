@@ -142,8 +142,9 @@ class ConsoleSessionBuilder(BaseSessionBuilder):
         guardrails = [AuthorizationGuardrail(self.session)]
         registrations = []
 
+        print("Guardrail registrations:\n")
         for guardrail in guardrails:
-            print(f"1: Enable {guardrail.name}\n2: Disable {guardrail.name}\n")
+            print(f"{guardrail.name}\n\t1: Enable\n\t2: Disable\n")
             user_input = self._get_user_input("Choose guardrail mode: ", int, (1, 2))
             mode = GuardrailMode.ENABLED if user_input == 1 else GuardrailMode.DISABLED
             registrations.append(GuardrailRegistration(guardrail=guardrail, mode=mode))

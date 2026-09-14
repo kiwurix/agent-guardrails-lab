@@ -4,13 +4,17 @@ from agent.tool_policies.decorators import AUTHORIZATION_POLICY_METADATA_KEY
 from agent.tool_policies.authorization import ToolAuthorizationPolicy
 from agent.tool_policies.enums import ToolAccessScope, ResourceType
 from ..core.enums import GuardrailAction
-from data.database import Order, Ticket, session
+from data.database import Order, Ticket
 from data.enums import UserRole
+from sqlalchemy.orm import Session
 
 
 class AuthorizationGuardrail(BaseGuardrail):
     name = "authorization"
     stage = GuardrailStage.PRE_TOOL
+
+    def __init__(self, session: Session):
+        self.session = session
 
 
     def evaluate(self, context: GuardrailContext) -> GuardrailDecision:
@@ -43,8 +47,7 @@ class AuthorizationGuardrail(BaseGuardrail):
                 raise ValueError("Unknown access scope")
 
 
-    @staticmethod
-    def is_owner(user_id: int, tool_args: dict[str, Any], resource_type: ResourceType) -> bool:
+    def is_owner(self, user_id: int, tool_args: dict[str, Any], resource_type: ResourceType) -> bool:
         match resource_type:
             case ResourceType.USER:
                 return tool_args.get("user_id") == user_id
@@ -54,7 +57,7 @@ class AuthorizationGuardrail(BaseGuardrail):
                 if not isinstance(ticket_id, int):
                     return False
 
-                ticket = session.get(Ticket, ticket_id)
+                ticket = self.session.get(Ticket, ticket_id)
                 return ticket is not None and ticket.user_id == user_id
 
             case ResourceType.ORDER:
@@ -62,7 +65,7 @@ class AuthorizationGuardrail(BaseGuardrail):
                 if not isinstance(order_id, int):
                     return False
 
-                order = session.get(Order, order_id)
+                order = self.session.get(Order, order_id)
                 return order is not None and order.user_id == user_id
 
             case _:

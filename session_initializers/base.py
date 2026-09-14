@@ -1,12 +1,24 @@
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 from data.database import Ticket, User
 from langchain_core.messages import AnyMessage, SystemMessage, AIMessage
+from sqlalchemy.orm import Session
+from agent.context import AgentContext
 from agent.state import AgentState
 from authentication.identity import AuthenticatedUser
+from guardrails.runtime.manager import GuardrailManager
+from guardrails.runtime.registry import GuardrailRegistration
+
+
+@dataclass
+class InitializedSession:
+    state: AgentState
+    context: AgentContext
 
 
 class BaseSessionBuilder(ABC):
-    def __init__(self):
+    def __init__(self, session: Session):
+        self.session = session
         self.messages: list[AnyMessage] = []
         self.authenticated_user: AuthenticatedUser | None = None
         self.ticket: Ticket | None = None
@@ -35,6 +47,10 @@ class BaseSessionBuilder(ABC):
     def _append_human_message(self):
         pass
 
+    @abstractmethod
+    def _get_guardrail_registrations(self) -> list[GuardrailRegistration]:
+        pass
+
     def _check_last_message(self):
         if self.messages is None:
             raise RuntimeError
@@ -43,9 +59,10 @@ class BaseSessionBuilder(ABC):
             self._append_human_message()
 
 
-    def initialize(self) -> AgentState:
+    def initialize(self) -> InitializedSession:
         self._authenticate_user()
         self._get_ticket()
+        registrations = self._get_guardrail_registrations()
         self._get_messages()
         self._check_last_message()
 
@@ -54,9 +71,15 @@ class BaseSessionBuilder(ABC):
 
         self.messages.insert(0, SystemMessage(content=self.get_ticket_prompt()))
 
-        # noinspection bad-argument-type
-        return AgentState(messages=self.messages, authenticated_user=self.authenticated_user,
-                          ticket_id=self.ticket.id)
+        state = AgentState(messages=self.messages)
+        context = AgentContext(
+            authenticated_user=self.authenticated_user,
+            guardrail_manager=GuardrailManager(registrations),
+            session=self.session,
+            ticket_id=self.ticket.id,
+        )
+
+        return InitializedSession(state=state, context=context)
 
 
     def get_ticket_prompt(self):

@@ -1,12 +1,15 @@
 from .base import BaseSessionBuilder
 from data.database import User
 from typing import Callable, TypeVar
-from data.database import Ticket, session, TicketMessage
+from data.database import Ticket, TicketMessage
 from sqlalchemy import select
 from data.enums import TicketStatus, SenderType, UserRole
 from typing import cast
 from langchain_core.messages import HumanMessage, AIMessage
 from authentication.identity import AuthenticatedUser
+from guardrails.core.enums import GuardrailMode
+from guardrails.pre_tool.authorization import AuthorizationGuardrail
+from guardrails.runtime.registry import GuardrailRegistration
 
 T = TypeVar("T")
 
@@ -14,7 +17,7 @@ T = TypeVar("T")
 class ConsoleSessionBuilder(BaseSessionBuilder):
     def _authenticate_user(self) -> None:
         query = select(User)
-        users = session.scalars(query).all()
+        users = self.session.scalars(query).all()
 
         index_to_user = {}
         for n, user in enumerate(users, 1):
@@ -46,8 +49,8 @@ class ConsoleSessionBuilder(BaseSessionBuilder):
         user = User(first_name=first_name, last_name=last_name,
                     email=email, role=UserRole.CUSTOMER.value)
 
-        session.add(user)
-        session.flush()
+        self.session.add(user)
+        self.session.flush()
 
         return user
 
@@ -56,7 +59,7 @@ class ConsoleSessionBuilder(BaseSessionBuilder):
             raise RuntimeError
 
         query = select(Ticket).where(Ticket.status == TicketStatus.OPEN.value)
-        tickets = session.scalars(query).all()
+        tickets = self.session.scalars(query).all()
 
         tickets_by_id = {}
         n = 0
@@ -87,8 +90,8 @@ class ConsoleSessionBuilder(BaseSessionBuilder):
             user_id=self.authenticated_user.user_id, status=TicketStatus.OPEN.value,
             subject=subject)
 
-        session.add(ticket)
-        session.flush()
+        self.session.add(ticket)
+        self.session.flush()
 
         return ticket
 
@@ -134,3 +137,15 @@ class ConsoleSessionBuilder(BaseSessionBuilder):
 
     def _append_human_message(self):
         self.messages.append(HumanMessage(content=input("CUSTOMER: ")))
+
+    def _get_guardrail_registrations(self) -> list[GuardrailRegistration]:
+        guardrails = [AuthorizationGuardrail(self.session)]
+        registrations = []
+
+        for guardrail in guardrails:
+            print(f"1: Enable {guardrail.name}\n2: Disable {guardrail.name}\n")
+            user_input = self._get_user_input("Choose guardrail mode: ", int, (1, 2))
+            mode = GuardrailMode.ENABLED if user_input == 1 else GuardrailMode.DISABLED
+            registrations.append(GuardrailRegistration(guardrail=guardrail, mode=mode))
+
+        return registrations

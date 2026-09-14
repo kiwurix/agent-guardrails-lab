@@ -1,12 +1,12 @@
 from typing import cast
+from .context import AgentContext
 from .model import model
 from .state import AgentState
 from .tools.registry import tools_by_name
-from langchain_core.messages import SystemMessage, ToolMessage, AIMessage
-import json
+from langchain_core.messages import SystemMessage, AIMessage
+from langgraph.runtime import Runtime
 from guardrails.core.contracts import GuardrailContext
 from guardrails.core.enums import GuardrailStage
-from guardrails.runtime.manager import GuardrailManager
 
 
 prompt = (
@@ -31,22 +31,12 @@ def llm_call(state: AgentState) -> dict:
     }
 
 
-def tool_node(state: AgentState) -> dict:
-    result = []
-    for tool_call in cast(AIMessage, state["messages"][-1]).tool_calls:
-        tool = tools_by_name[tool_call["name"]]
-        observation = tool.invoke(tool_call["args"])
-        result.append(ToolMessage(content=json.dumps(observation, default=str), tool_call_id=tool_call["id"]))
-
-    return {"messages": result}
-
-
-def pre_tool_guardrails_node(state: AgentState) -> dict:
+def pre_tool_guardrails_node(state: AgentState, runtime: Runtime[AgentContext]) -> dict:
     stage = GuardrailStage.PRE_TOOL
     raise NotImplementedError()
-    manager = GuardrailManager()
-    authenticated_user = state["authenticated_user"]
-    ticket_id = state["ticket_id"]
+    manager = runtime.context.guardrail_manager
+    authenticated_user = runtime.context.authenticated_user
+    ticket_id = runtime.context.ticket_id
 
     for tool_call in cast(AIMessage, state["messages"][-1]).tool_calls:
         tool = tools_by_name[tool_call["name"]]

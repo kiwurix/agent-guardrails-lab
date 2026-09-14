@@ -1,8 +1,11 @@
 from typing import Literal, cast
+from .context import AgentContext
 from .state import AgentState
-from .nodes import llm_call, tool_node, pre_tool_guardrails_node
+from .nodes import llm_call, pre_tool_guardrails_node
+from .tools.registry import tools
 from langchain_core.messages import AIMessage
 from langgraph.graph import StateGraph, START, END
+from langgraph.prebuilt import ToolNode
 
 
 
@@ -17,10 +20,10 @@ def should_continue(state: AgentState) -> Literal["pre_tool_guardrails_node", "_
     return END
 
 
-agent_builder = StateGraph(AgentState)
+agent_builder = StateGraph(AgentState, context_schema=AgentContext)
 
 agent_builder.add_node("llm_call", llm_call)
-agent_builder.add_node("tool_node", tool_node)
+agent_builder.add_node("tool_node", ToolNode(tools))
 agent_builder.add_node("pre_tool_guardrails_node", pre_tool_guardrails_node)
 
 agent_builder.add_edge(START, "llm_call")

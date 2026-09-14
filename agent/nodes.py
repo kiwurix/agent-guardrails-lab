@@ -1,13 +1,14 @@
-from typing import cast
-from .context import AgentContext
+from typing import Callable
 from .model import model
 from .state import AgentState
-from .tools.registry import tools_by_name
-from langchain_core.messages import SystemMessage, AIMessage
-from langgraph.runtime import Runtime
+from .tools.registry import tools
+from langchain_core.messages import SystemMessage, ToolMessage
+from langgraph.prebuilt.tool_node import ToolCallRequest
+from langgraph.prebuilt import ToolNode
+from langgraph.types import Command
 from guardrails.core.contracts import GuardrailContext
 from guardrails.core.enums import GuardrailStage
-
+from guardrails.core import GuardrailAction
 
 prompt = (
     "You are a customer support assistant. "
@@ -31,24 +32,43 @@ def llm_call(state: AgentState) -> dict:
     }
 
 
-def pre_tool_guardrails_node(state: AgentState, runtime: Runtime[AgentContext]) -> dict:
+def pre_tool_guardrails_intercept(
+        request: ToolCallRequest, handler: Callable[[ToolCallRequest], ToolMessage | Command]
+) -> ToolMessage | Command:
     stage = GuardrailStage.PRE_TOOL
-    raise NotImplementedError()
-    manager = runtime.context.guardrail_manager
-    authenticated_user = runtime.context.authenticated_user
-    ticket_id = runtime.context.ticket_id
+    agent_context = request.runtime.context
+    tool_call = request.tool_call
 
-    for tool_call in cast(AIMessage, state["messages"][-1]).tool_calls:
-        tool = tools_by_name[tool_call["name"]]
+    manager = agent_context.guardrail_manager
+    authenticated_user = agent_context.authenticated_user
+    ticket_id = agent_context.ticket_id
 
-        context = GuardrailContext(
-            authenticated_user=authenticated_user,
-            ticket_id=ticket_id,
-            tool_name=tool.name,
-            tool_args=tool_call["args"],
-            tool_metadata=tool.metadata
+    tool = request.tool
+    if tool is None:
+        return handler(request)
+
+    guardrail_context = GuardrailContext(
+        authenticated_user=authenticated_user,
+        ticket_id=ticket_id,
+        tool_name=tool.name,
+        tool_args=tool_call["args"],
+        tool_metadata=tool.metadata
+    )
+
+    aggregated_decision = manager.run_guardrails(stage, guardrail_context)
+    if aggregated_decision.action == GuardrailAction.BLOCK:
+        reasons = (
+            f"{decision.guardrail_name}: {decision.reason}"
+            for decision in aggregated_decision.decisions
+        )
+        return ToolMessage(
+            content="\n".join(reasons),
+            name=tool_call["name"],
+            tool_call_id=tool_call["id"],
+            status="error"
         )
 
-        manager.run_guardrails(stage, context)
+    return handler(request)
 
 
+tool_node = ToolNode(tools, wrap_tool_call=pre_tool_guardrails_intercept)

@@ -9,7 +9,5 @@ tools = [
     get_ticket_info,
     get_order_info,
     get_order_items,
-    get_item_info,
+    get_item_info
 ]
-
-tools_by_name = {tool.name: tool for tool in tools}

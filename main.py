@@ -4,10 +4,13 @@ from data.database import session
 from session_initializers.console import ConsoleSessionBuilder
 
 initialized = ConsoleSessionBuilder(session).initialize()
+state = initialized.state
 
 try:
     while True:
-        state = agent.invoke(initialized.state, context=initialized.context)
+        state = agent.invoke(state, context=initialized.context,
+            config={"max_concurrency": 1}
+        )
         print(f"\nAGENT: {state["messages"][-1].content.replace("*", "")}\n")
 
         user_input = input("CUSTOMER: ")

@@ -1,14 +1,12 @@
 from typing import Callable
 from .model import model
 from .state import AgentState
-from .tools.registry import tools
+from .tools import tools
 from langchain_core.messages import SystemMessage, ToolMessage
 from langgraph.prebuilt.tool_node import ToolCallRequest
 from langgraph.prebuilt import ToolNode
 from langgraph.types import Command
-from guardrails.core.contracts import GuardrailContext
-from guardrails.core.enums import GuardrailStage
-from guardrails.core import GuardrailAction
+from guardrails.core import GuardrailAction, GuardrailContext, GuardrailStage
 
 prompt = (
     "You are a customer support assistant. "

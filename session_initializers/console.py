@@ -6,10 +6,10 @@ from sqlalchemy import select
 from data.enums import TicketStatus, SenderType, UserRole
 from typing import cast
 from langchain_core.messages import HumanMessage, AIMessage
-from authentication.identity import AuthenticatedUser
-from guardrails.core.enums import GuardrailMode
-from guardrails.pre_tool.authorization import AuthorizationGuardrail
-from guardrails.runtime.registry import GuardrailRegistration
+from authentication import AuthenticatedUser
+from guardrails.core import GuardrailMode
+from guardrails.pre_tool import AuthorizationGuardrail
+from guardrails.runtime import GuardrailRegistration
 
 T = TypeVar("T")
 

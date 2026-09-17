@@ -1,6 +1,6 @@
 import os
 import dotenv
-from .tools.registry import tools
+from .tools import tools
 from langchain_openrouter import ChatOpenRouter
 
 dotenv.load_dotenv()

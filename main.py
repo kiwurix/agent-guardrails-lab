@@ -1,7 +1,7 @@
 from langchain_core.messages import HumanMessage
 from agent.graph import agent
 from data.database import session
-from session_initializers.console import ConsoleSessionBuilder
+from session_initializers import ConsoleSessionBuilder
 
 initialized = ConsoleSessionBuilder(session).initialize()
 state = initialized.state

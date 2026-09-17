@@ -1,9 +1,6 @@
 from typing import Any
-from guardrails.core import BaseGuardrail, GuardrailContext, GuardrailDecision, GuardrailStage
-from agent.tool_policies.decorators import AUTHORIZATION_POLICY_METADATA_KEY
-from agent.tool_policies.authorization import ToolAuthorizationPolicy
-from agent.tool_policies.enums import ToolAccessScope, ResourceType
-from ..core.enums import GuardrailAction
+from guardrails.core import BaseGuardrail, GuardrailAction, GuardrailContext, GuardrailDecision, GuardrailStage
+from agent.tool_policies import AUTHORIZATION_POLICY_METADATA_KEY, ToolAuthorizationPolicy, ToolAccessScope, ResourceType
 from data.database import Order, Ticket
 from data.enums import UserRole
 from sqlalchemy.orm import Session

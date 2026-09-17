@@ -1,6 +1,6 @@
 from dataclasses import dataclass
-from authentication.identity import AuthenticatedUser
-from guardrails.runtime.manager import GuardrailManager
+from authentication import AuthenticatedUser
+from guardrails.runtime import GuardrailManager
 from sqlalchemy.orm import Session
 
 

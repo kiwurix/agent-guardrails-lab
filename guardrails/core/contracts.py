@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from typing import Any
-from authentication.identity import AuthenticatedUser
+from authentication import AuthenticatedUser
 from .enums import GuardrailAction
 
 

@@ -5,9 +5,8 @@ from langchain_core.messages import AnyMessage, SystemMessage, AIMessage
 from sqlalchemy.orm import Session
 from agent.context import AgentContext
 from agent.state import AgentState
-from authentication.identity import AuthenticatedUser
-from guardrails.runtime.manager import GuardrailManager
-from guardrails.runtime.registry import GuardrailRegistration
+from authentication import AuthenticatedUser
+from guardrails.runtime import GuardrailManager, GuardrailRegistration
 
 
 @dataclass

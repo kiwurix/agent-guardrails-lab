@@ -3,8 +3,7 @@ from langgraph.prebuilt import ToolRuntime
 from sqlalchemy import select
 
 from agent.context import AgentContext
-from agent.tool_policies.decorators import authorization_policy
-from agent.tool_policies.enums import ToolAccessScope
+from agent.tool_policies import authorization_policy, ToolAccessScope
 from data.database import Item
 
 

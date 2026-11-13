@@ -1,17 +1,25 @@
 import os
+from pathlib import Path
+
 import dotenv
-from .tools import tools
 from langchain_openrouter import ChatOpenRouter
 
-dotenv.load_dotenv()
+from .tools import tools
 
-if not os.getenv("OPENROUTER_API_KEY"):
-    exit("Env variable not found: OPENROUTER_API_KEY")
+
+dotenv.load_dotenv(Path(__file__).resolve().parents[1] / ".env", override=True)
+
+api_key = os.getenv("GUARDRAILS_OPENROUTER_API_KEY")
+model_id = os.getenv("GUARDRAILS_MODEL")
+
+if not api_key or api_key == "your-openrouter-api-key":
+    raise SystemExit("Set GUARDRAILS_OPENROUTER_API_KEY in the project .env file")
+if not model_id or model_id == "provider/model-id":
+    raise SystemExit("Set GUARDRAILS_MODEL to an OpenRouter model ID in the project .env file")
 
 model = ChatOpenRouter(
-    model = 'openai/gpt-5.6-luna',
-    temperature= 0,
-    max_tokens=512
+    model=model_id,
+    api_key=api_key,
+    temperature=0,
+    max_tokens=512,
 ).bind_tools(tools)
-
-
